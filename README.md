@@ -5,6 +5,10 @@ Las métricas se guardan usando localstack para probar el desarrollo local sin n
 
 https://www.localstack.cloud/
 
-Basado en el artículo https://reflectoring.io/spring-aws-cloudwatch/
+Basado en el artículo:
+https://reflectoring.io/spring-aws-cloudwatch/
 
-V1: usando CloudWatch SDK
+Los casos de prueba de Micromenter se tomaron de:
+https://www.baeldung.com/micrometer
+
+
