@@ -4,6 +4,7 @@ import io.micrometer.cloudwatch2.CloudWatchConfig;
 import io.micrometer.cloudwatch2.CloudWatchMeterRegistry;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,12 +27,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Configuration
+//@Configuration
 public class AppConfig {
-
+/*
     @Value("${localstack.cloudwatch.endpoint}")
     private String cloudWatchEndpoint;
 
+
+    @Bean
+    public MeterRegistry getMeterRegistry() {
+        return new SimpleMeterRegistry();
+    }
+
+*/
+/*
     @Bean
     public CloudWatchAsyncClient cloudWatchAsyncClient() {
         return CloudWatchAsyncClient.builder()
@@ -67,6 +76,6 @@ public class AppConfig {
             }
         };
         return cloudWatchConfig;
-    }
+    }*/
 }
 

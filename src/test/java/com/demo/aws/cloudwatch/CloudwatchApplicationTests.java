@@ -1,13 +1,23 @@
 package com.demo.aws.cloudwatch;
 
+import io.micrometer.cloudwatch2.CloudWatchConfig;
+import io.micrometer.cloudwatch2.CloudWatchMeterRegistry;
 import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.distribution.ValueAtPercentile;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 
+import java.net.URI;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -19,12 +29,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 class CloudwatchApplicationTests {
 
-	static SimpleMeterRegistry simpleMeterRegistry;
+	@Value("${localstack.cloudwatch.endpoint}")
+	private String cloudWatchEndpoint;
+
+	private static SimpleMeterRegistry simpleMeterRegistry;
 
 	@BeforeAll
 	public static void setUp(){
 		simpleMeterRegistry = new SimpleMeterRegistry();
 	}
+
+
 	@Test
 	public void givenGlobalRegistry_whenIncrementAnywhere_thenCounted() {
 		class CountedObject {
@@ -32,7 +47,7 @@ class CloudwatchApplicationTests {
 				Metrics.counter("objects.instance").increment(1.0);
 			}
 		}
-		Metrics.addRegistry(new SimpleMeterRegistry());
+		Metrics.addRegistry(simpleMeterRegistry);
 
 		Metrics.counter("objects.instance").increment();
 		new CountedObject();
@@ -144,6 +159,21 @@ class CloudwatchApplicationTests {
 		assertEquals(expectedMicrometer, actualMicrometer);
 	}
 
+	@Test
+	public void givenCloudWatchMeterRegistry_whenAddMetrics_thenPublishToLocalStack(){
+		MeterRegistry cloudWatchMeterRegistry = getMeterRegistry();
+
+		Counter counter = Counter
+				.builder("Counter")
+				.description("Counter Test")
+				.tags("test", "performance")
+				.register(cloudWatchMeterRegistry);
+
+		counter.increment(2.0);
+
+
+	}
+
 	private void addPercentiles(Timer timer){
 		timer.record(2, TimeUnit.SECONDS);
 		timer.record(2, TimeUnit.SECONDS);
@@ -153,4 +183,36 @@ class CloudwatchApplicationTests {
 		timer.record(13, TimeUnit.SECONDS);
 
 	}
+
+	private MeterRegistry getMeterRegistry() {
+
+		return new CloudWatchMeterRegistry(
+				setupCloudWatchConfig(),
+				Clock.SYSTEM,
+				cloudWatchAsyncClient());
+	}
+
+	private CloudWatchConfig setupCloudWatchConfig() {
+		CloudWatchConfig cloudWatchConfig = new CloudWatchConfig() {
+
+			private Map<String, String> configuration = Map.of(
+					"cloudwatch.namespace", "productsApp2",
+					"cloudwatch.step", Duration.ofMinutes(1).toString());
+
+			@Override
+			public String get(String key) {
+				return configuration.get(key);
+			}
+		};
+		return cloudWatchConfig;
+	}
+
+	private CloudWatchAsyncClient cloudWatchAsyncClient() {
+		return CloudWatchAsyncClient.builder()
+			.region(Region.US_EAST_1)
+			.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
+			.endpointOverride(URI.create(cloudWatchEndpoint))
+			.build();
+	}
+
 }

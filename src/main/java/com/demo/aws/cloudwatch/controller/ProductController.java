@@ -8,6 +8,7 @@ import com.demo.aws.cloudwatch.service.ProductService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,6 +32,10 @@ public class ProductController {
 
     private Gauge priceGauge;
 
+
+  //  @Autowired
+  //  MeterRegistry registry = new SimpleMeterRegistry();
+/*
     @Autowired
     ProductController(MeterRegistry meterRegistry){
 
@@ -51,11 +56,11 @@ public class ProductController {
                 .register(meterRegistry);
     }
 
-
+*/
     @Autowired
     ProductService productService;
-    @Autowired
-    private MetricPublisher metricPublisher; //send metrics with AWS SDK
+  //  @Autowired
+ //   private MetricPublisher metricPublisher; //send metrics with AWS SDK
 
     @GetMapping("/products")
     @ResponseBody
@@ -64,13 +69,13 @@ public class ProductController {
         numberOfCalls++;
         List<Product> products = productService.getAllProducts();
 
-        sendMetricToAWSWithSDK(numberOfCalls);
-        sendMetricsToAWSWithMicometer();
+    //    sendMetricToAWSWithSDK(numberOfCalls);
+       // sendMetricsToAWSWithMicometer();
         return products;
 
     }
 
-
+/*
     private void sendMetricToAWSWithSDK(Integer numberOfCalls){
 
         Double metricValue = numberOfCalls.doubleValue();
@@ -80,7 +85,7 @@ public class ProductController {
         );
 
         log.info("Sending metric to aws with sdk");
-        metricPublisher.putMetricData("Product", "Products", metricValue, metricTags);
+      //  metricPublisher.putMetricData("Product", "Products", metricValue, metricTags);
 
     }
 
@@ -88,6 +93,6 @@ public class ProductController {
         log.info("Sending metric to aws with Micrometer");
         pageViewsCounter.increment();
     }
-
+*/
 }
 

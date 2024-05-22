@@ -12,12 +12,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+//@Service
 public class MetricPublisher {
 
     private CloudWatchAsyncClient cloudWatchAsyncClient;
 
-    @Autowired
+  //  @Autowired
     public MetricPublisher(CloudWatchAsyncClient cloudWatchAsyncClient) {
         super();
         this.cloudWatchAsyncClient = cloudWatchAsyncClient;
